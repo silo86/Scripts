@@ -12,7 +12,7 @@ import sys
 import errno
 from pathlib import Path
 
-
+###################################### Execute n times the query taking parameters from the csv ######################################
 try:
     os.mkdir('output')
 except OSError as e:
@@ -42,41 +42,40 @@ csv
 
 def doQuery( db, unidad, fecha_implementacion) :
     query = f'''
-    select 
+select 
 db,
 unidad,
 left(dia,4) as anio,
 case when (right(dia,4) between '0101' and '0430') then '1' 
-     when (right(dia,4) between '0501' and '0831') then '2'
-	 else '3'
-	 end 
-	 as cuatrimestre,
+	when (right(dia,4) between '0501' and '0831') then '2'
+	else '3'
+	end 
+	as cuatrimestre,
 tipo_escrito,
 estado,
 sistema,
 sum(total) as total from(
-
-		SELECT 
-		current_database()AS db,
-		j.dscr as unidad,
-		febo as dia,
-		t.dscr tipo_escrito,
-		e.dscr as estado,
-		case when (j.dscr = '{unidad}' and febo < '{fecha_implementacion}') then 'lex' else 'sae' end as sistema,
-		count (*) as total
-		FROM public."HIST" AS h 
-		left join public."TIES" AS T on h.tiesid = t.tiesid 
-		left join public."ESTA" AS e on e.estaid = h.estaid 
-		left join public."JUZG" AS j on h.juzgid = j.juzgid
-		where t.dscr ilike 'Escritos Ingre%dos%'
-		and left(h.febo,4) >= '2019'
-		and j.dscr not ilike '%fisc%'
-		and j.dscr = '{unidad}'
-		group by 
-		current_database(), j.dscr, febo, t.dscr,e.dscr,
-		case when (j.dscr = '{unidad}' and febo < '{fecha_implementacion}') then 'lex' else 'sae' end
-		order by 1,2,3,4,5
-	) escritos_por_fecha_implementacion
+	SELECT 
+	current_database()AS db,
+	j.dscr as unidad,
+	febo as dia,
+	t.dscr tipo_escrito,
+	e.dscr as estado,
+	case when (j.dscr = '{unidad}' and febo < '{fecha_implementacion}') then 'lex' else 'sae' end as sistema,
+	count (*) as total
+	FROM public."HIST" AS h 
+	left join public."TIES" AS T on h.tiesid = t.tiesid 
+	left join public."ESTA" AS e on e.estaid = h.estaid 
+	left join public."JUZG" AS j on h.juzgid = j.juzgid
+	where t.dscr ilike 'Escritos Ingre%dos%'
+	and left(h.febo,4) >= '2019'
+	and j.dscr not ilike '%fisc%'
+	and j.dscr = '{unidad}'
+	group by 
+	current_database(), j.dscr, febo, t.dscr,e.dscr,
+	case when (j.dscr = '{unidad}' and febo < '{fecha_implementacion}') then 'lex' else 'sae' end
+	order by 1,2,3,4,5
+) escritos_por_fecha_implementacion
 group by 
 db,
 unidad,
@@ -107,14 +106,13 @@ for i, fila in arch.iterrows():
 os.chdir(ruta_archivo)
 extension = 'csv'
 all_filenames = [i for i in glob.glob('*.{}'.format(extension))]
-
 #combine all files in the list
 merged = pd.concat([pd.read_csv(f,error_bad_lines = False) for f in all_filenames ])
 #export to csv
 merged.to_csv("merged.csv", index=False, encoding='utf-8')
 
-read_file = pd.read_csv ('merged.csv')
-merged.to_excel ('merged.xlsx', index = None, header=True)
+read_file = pd.read_csv('merged.csv')
+merged.to_excel('merged.xlsx', index = None, header=True)
 
 from openpyxl import load_workbook
 wb2 = load_workbook('merged.xlsx')
