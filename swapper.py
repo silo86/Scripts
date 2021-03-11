@@ -11,11 +11,9 @@ import datetime
 
 
 #datos
-hostname_vero = '172.23.12.23'
-hostname = '172.20.0.80'
-hostname_penal = '172.20.0.100'
-username = 'postgres'
-password = 'estadistica'
+hostname = os.getenv("pc_vl_ip")
+username = os.getenv("pc_vl_username")
+password = os.getenv("pc_vl_pass")
 tabla = '"ADJU"'
 update = "UPDATE  public.""{0}"" SET vers = '{1}'"
 select = "SELECT vers from public.""{0}"" "
